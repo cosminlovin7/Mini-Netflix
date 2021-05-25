@@ -1,0 +1,138 @@
+Cosmin-Viorel Lovin<->325CD<->Tema 1 POO-VideosDB
+
+Implementarea temei mele foloseste foarte mult conceptul de singleton, pentru ca am decis sa implementez fiecare
+command/query/recommendation in parte si sa se rezolve printr-o instanta unica(sa nu existe doua, trei sau mai multe..)
+Drept urmare voi incepe prin a prezenta clasele ActionType.
+
+Clasele ActionType -> Sunt clase care se ocupa cu rezolvarea tip-urilor de actiuni primite la intrare.
+Spre exemplu, clasa Command rezolva o actiune de tip comanda, de orice fel, facand distinctia intre tipurile ei (3 la
+numar) si anume : favorite, rating si view. Fiecare tip de actiune, la randul lui, este implementata intr-o clasa sepa-
+rata, si folosind conceptul de singleton, se apeleaza metoda ce rezolva comanda ceruta.
+In acelasi mod, sunt construite si celelalte clase: ActorQuery, MovieQuery, ShowQuery, UserQuery si Recommendation.
+
+Voi continua acum prin a prezenta fiecare clasa, si ce rezolva ea.
+------COMMANDSOLVER------
+Folderul commandsolver contine toate clasele ce rezolva actiuni de tip command.
+SingleCommandFavorite:
+Un film nu poate fi adaugat la favorite daca nu a fost vazut. Intai cautam sa vedem in lista de filme favorite a utili-
+zatorului daca filmul a fost vazut sau nu si salvam rezultatul (true/false) intr-o variabila de tip boolean cu nume
+sugestiv: favorite. Intr-o variabila de tip boolean seen, marcam daca filmul a fost vizionat sau nu. In functie de
+starea celor doua variabile, alegem ce rezultat sa intoarcem utilizatorului.
+
+SingleCommandRating:
+Pentru acest task am creat o clasa interna numita Rating in interiorul clasei UserInputData, si am adaugat un camp nou,
+o lista de Rating-uri. In aceasta lista practic stochez toate filmele/serialele la care user-ul a dat deja rating.
+Incep prin a verifica intai daca filmul a fost vizionat pentru a putea aplica un rating. Apoi continui prin a face
+distinctia, daca videoclipul este film sau serial, si verific daca utilizatorul a dat deja rating sau nu. Daca nu a dat,
+atunci adaug rating-ul in istoricul de rating-uri si in acelasi timp modific rating-urile videoclipului folosind meto-
+dele create de mine in clasele MovieInputData(modifyRating), respectiv SerialInputData(addRating).
+
+SingleCommandView:
+Aici e destul de simplu, daca un videoclip a fost vizionat, incrementam numarul de vizionari pentru acel videoclip,
+altfel, il adaugam in istoricul de vizionari ale utilizatorului.
+
+------QUERYSOLVER-----
+Folderul querysolver contine toate clasele ce rezolva actiuni de tip query.
+Pentru rezolvarea query-urilor, m-am folosit de o clasa implementata de mine OrderedList, cu ajutorul careia voi sorta
+toate elementele din interiorul ei, fie ei actori, filme, useri, seriale.
+Am mai folosit si niste clase cu ajutorul carora sortez listele in functie de diferiti parametri. Acestea se gasesc
+in folderul sortclasses. Cred ca este destul de evident ce face fiecare in parte...
+
+Aceasta clasa(OrderedList) are mai multe campuri, pe care le voi folosi intr-un mod diferit in functie de ce doresc
+sa stochez:
+-name (folosit pentru toate)
+-rating (folosit pentru actori si filme)
+-numberOfAwards (folosit pentru actori)
+-numberOfRatings (folosit pentru useri)
+-duration (folosit pentru filme si seriale)
+-numberOfViews.
+-type (folosit pentru a ordona in functie de aparitia in baza de date filmele si serialele)
+
+SingleQueryAverageActors:
+Pentru fiecare actor, calculez rating-ul acestuia si il adaug intr-o lista de tip OrderedList, completand campurile
+name si rating. Sortez lista in sens crescator, iar apoi in functie de tipul de sortare dorit de la input, copii
+elementele din lista de OrderedList intr-o lista finala, de la coada la inceput sau invers.
+
+SingleQueryAwardsActors:
+Folosind o variabila de tip boolean ok, pot verifica daca actorul are toate premiile cerute de actiune la input. Daca da
+atunci variabila ramane adevarata, si calculez numarul total de premii apoi adaug intr-o lista de tip OrderedList, pe
+care o voi sorta in functie de numarul de premii si nume. In final ordonez lista in functie de parametrii dati.
+Acum scriind acest README mi-am dat seama ca as fi putut sa nu mai pun acel
+"if (action.getSortType().equalsIgnoreCase(Constants.ASC))" din moment ce lista este deja sortata crescator initial.
+
+SingleQueryFilterDescriptionActors:
+Pentru a rezolva acest task, am decis ca pentru fiecare actor sa caut cuvintele cheie in descriere. Am copiat
+descrierea intr-un String pe care l-am spart intr-un vector de cuvinte folosind split (practic am incercat
+sa obtin fiecare cuvant independent din descriere). Apoi am verificat existenta cuvintelor cheie in descriere. Daca
+acestea existau, le adaugam intr-o lista de tip OrderedList pe care o voi sorta pur si simplu dupa nume.
+
+SingleQueryFavoriteMovie/Show:
+Rezolvarea acestor task-uri este asemanatoare. In primul rand adaug intr-o lista de tip orderedList, videoclipul daca
+este din acelasi an cu cel cerut la input, si face parte din acelasi gen. Apoi calculez numarul de aparitii in istoricul
+utilizatorilor pentru toate videoclipurile si le sortez in functie de acest numar, apoi in functie de nume.
+
+SingleQueryMostViewedMovie/Show:
+In primul rand, caut toate videoclipurile care corespund filtrului aplicat la intrare, dupa aceea calculez numarul
+total de vizionari ale acestui videoclip, adica practic calculez de cate ori apare ca vizionat in lista de videoclipuri
+vizionate a fiecarui utilizator, si sortez lista de tip OrderedList dupa numarul de aparitii si dupa nume.
+
+SingleQueryLongestMovie/Show:
+Adaugam intr-o lista de tip orderedList, doar videoclipurile care indeplinesc cerinta de la intrare, apoi sortam lista
+in functie de durata si de numele videoclipurilor.
+
+SingleQueryRatingMovie/Show:
+La fel ca si la celelalte, cautam si adaugam intr-o lista de tip orderedList doar videoclipurile care indeplinesc con-
+ditiile. Avand in vedere ca atunci cand acordam un rating unui videoclip, formam rating-ul automat adaugand la cel vechi
+si impartind la 2, tot ce trebuie sa facem este sa sortam dupa rating-ul videoclipurilor, si dupa nume.
+
+SingleQueryUsers:
+Pentru acest task, cautam userii care au acordat rating cel putin unui videoclip, si avand in vedere ca salvam intr-o
+lista de Rating-uri, toate rating-urile acordate => ca numarul de rating-uri date este chiar numarul de elemente din
+aceasta lista. Sortam apoi lista de tip orderedList, dupa numarul de rating-uri acordate si dupa nume in final.
+
+------RECOMMENDATIONSOLVER-----
+Folderul recommendationsolver contine toate clasele cu ajutorul carora se rezolva actiunile de tip recommendation.
+In toate se aceste clase, se face intai verificarea tipului userului, daca este premium sau nu. Userii standard nu
+beneficiaza de anumite facilitati.
+
+SingleRecommendationBestUnseen:
+Practic, intr-o lista de tip OrderedList, se stocheaza toate filmele si serialele nevazute, impreuna cu tipul lor
+1-movie
+2-serial
+si cu rating-ul acestora, care, la fel ca si mai sus, este deja calculat trebuie doar sa-l adaugam in lista.
+Apoi in functie de tipul acestora si de rating, se realizeaza sortarea. Practic daca un film si un serial au acelasi
+rating, filmul va fi inaintea serialului din cauza faptului ca are tipul 1.(ordinea din database).
+
+SingleRecommendationFavorite:
+Pentru fiecare utilizator in parte, se cauta toate videoclipurile care sunt adaugate la favorite. Daca vreun videoclip
+a fost deja adaugat la lista de OrderedList, atunci se incrementeaza numarul de views(care practic reprezinta numarul
+de aparitii in istoricul de favorite al utilizatorilor). Daca nu, se adauga un element nou in lista, care are la
+number of views setata valoarea 1.
+Sortarea se realizeaza in functie de numarul de aparitii, dar si de aparitia in baza de date a videoclipurilor.
+
+SingleRecommendationPopular:
+Practic ideea la acest task a fost sa calculez popularitatea pentru fiecare gen din enum-ul Genre.
+Aici am implementat o clasa noua, MostPopularGenre care contine urmatoarele campuri:
+-genreName (numele genului)
+-totalViews (numarul total de vizionari)
+-o lista de tip OrderedList care contine toate serialele si filmele din acest gen.
+Si practic pentru fiecare film, caut sa vad daca exista deja in genul respectiv, daca da, doar incrementez numarul
+de vizionari. Daca nu, il si adaug. Daca genul nu exista in lista de genuri creata de mine, atunci adaug genul
+si adaug si videoclipul in lista de videoclipuri a genului respectiv. Aceeasi operatiune o fac si pentru seriale,
+iar in final, sortez lista nou obtinuta de tipul MostPopularGenre dupa numarul de vizionari. Apoi, pentru fiecare
+lista de videoclipuri din fiecare gen, o sortez dupa aparitia videoclipului in baza de date.
+
+SingleRecommendationSearch:
+Se cauta toate videoclipurile care nu au fost vizionate de utilizator si care sunt din genul primit ca filtru la input.
+Se adauga intr-o lista de tip OrderedList, impreuna cu rating-urile fiecarui videoclip si se sorteaza dupa rating pentru
+a putea intoarce cel mai bine "cotat", ca sa zic asa, videoclip.
+
+SingleRecommendationStandard:
+Cel mai simplu task dupa parerea mea, cauta in lista de filme, si apoi seriale ale utilizatorului primul videoclip care
+nu apare si il returneaza ca recomandare.
+
+
+
+
+
+

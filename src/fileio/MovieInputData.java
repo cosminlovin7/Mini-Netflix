@@ -1,0 +1,56 @@
+package fileio;
+
+import java.util.ArrayList;
+
+/**
+ * Information about a movie, retrieved from parsing the input test files
+ * <p>
+ * DO NOT MODIFY
+ */
+public final class MovieInputData extends ShowInput {
+    /**
+     * Duration in minutes of a season
+     */
+    private final int duration;
+
+    private double rating;
+
+    public MovieInputData(final String title, final ArrayList<String> cast,
+                          final ArrayList<String> genres, final int year,
+                          final int duration) {
+        super(title, year, cast, genres);
+        this.duration = duration;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    /**
+     * Modifica rating-ul filmului facand media dintre cel vechi
+     * si cel nou. In cazul in care filmul nu are un rating, pur
+     * si simplu il copiaza pe cel primit ca parametru.
+     */
+
+    public void modifyRating(final double newRating) {
+        if (rating == 0) {
+            rating = newRating;
+        } else {
+            rating = (rating + newRating) / 2;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "MovieInputData{" + "title= "
+                + super.getTitle() + "year= "
+                + super.getYear() + "duration= "
+                + duration + "cast {"
+                + super.getCast() + " }\n"
+                + "genres {" + super.getGenres() + " }\n ";
+    }
+}
